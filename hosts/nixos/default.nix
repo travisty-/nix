@@ -17,9 +17,13 @@
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
   # Bootloader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/vda";
-  boot.loader.grub.useOSProber = true;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  boot.initrd.luks.devices."luks-06610e07-b64a-4772-967e-89596238a48a".device = "/dev/disk/by-uuid/06610e07-b64a-4772-967e-89596238a48a";
+
+  # Enable TRIM support and set flags to improve SSD performance.
+  fileSystems."/".options = [ "noatime" "nodiratime" "discard" ];
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -71,7 +75,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.travis = {
     isNormalUser = true;
-    description = "Travis";
+    description = "travis";
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -80,14 +84,6 @@
       #  thunderbird
     ];
   };
-
-  # Enable automatic login for the user.
-  services.displayManager.autoLogin.enable = true;
-  services.displayManager.autoLogin.user = "travis";
-
-  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
 
   # Allow unfree packages.
   nixpkgs.config.allowUnfree = true;
